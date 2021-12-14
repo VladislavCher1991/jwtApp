@@ -25,7 +25,9 @@ Spring based Rest application with JWT security
     "name": "admin"
 }
 Для авторизации в заголовке запроса добавляем ключ “Authorization” со значением «Bearer ‘Токен’». Пример заголовка запроса:
+
 KEY: Authorization
+
 VALUE: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGVzIjpbIlJPTEVfQURNSU4iLCJST0xFX1VTRVIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2xvZ2luIiwiZXhwIjoxNjM5MTMxMzQzfQ.oikczfTpMvR0Ifht0ufBmYIaZE9WF6rnavUSO_2nsJw
 
 Запросы на сохранения сообщений в бд отправлять на http://localhost:8080/messages/save POST методом. Для доступа к этому методу авторизация не обязательна. 
