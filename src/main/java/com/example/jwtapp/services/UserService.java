@@ -7,6 +7,9 @@ import com.example.jwtapp.repos.MessageRepo;
 import com.example.jwtapp.repos.RoleRepo;
 import com.example.jwtapp.repos.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.*;
 
@@ -40,11 +44,13 @@ public class UserService implements UserDetailsService {
                 int amountOfMessages = Integer.parseInt(splitText[1]);
                 //Если распарсили число удачно, то проверяем больше оно чем общее количество записей в БД,
                 //то уведомляем об этом пользователя.
-                List<Message> listFromDb = getMessages();
-                if (listFromDb.size() < amountOfMessages) {
-                    return "The number of records in the database (" + listFromDb.size() + ") " +
+
+                if (messageRepo.count() < amountOfMessages) {
+                    return "The number of records in the database (" + messageRepo.count() + ") " +
                             "is less than the requested one (" + amountOfMessages + ").";
                 }
+                Pageable pages = PageRequest.of(0, amountOfMessages, Sort.Direction.DESC, "id");
+                List<Message> listFromDb = messageRepo.findAll(pages).getContent();
                 //Если запрос составлен корректно, то "строим" строку для ответа.
                 StringBuilder builder = new StringBuilder();
                 for (int i = 1; i < amountOfMessages + 1; i++) {
@@ -119,6 +125,6 @@ public class UserService implements UserDetailsService {
 
 
     public List<Message> getMessages() {
-        return messageRepo.findAll();
+        return (List<Message>) messageRepo.findAll();
+        }
     }
-}
