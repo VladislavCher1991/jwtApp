@@ -19,8 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,15 +37,9 @@ public class UserService implements UserDetailsService {
     public String proceedIncomingMessage(Message message) {
         String text = message.getText();
         String[] splitText = text.split(" ");
-        //Разделяем полученное сообщение по пробелу. Если количество слов не равно 2 или первое слово не
-        //"history", то сохраняем полученное сообщение в БД.
-        if (splitText[0].equals("history") && splitText.length==2) {
+        if (splitText[0].equals("history") && splitText.length == 2) {
             try {
-                //Если условия из предыдущего пункта выполнились, то пытаемся распарсить второе слово в число.
-                //Если не выходит получаем исключение, обрабатываем его и сохраняем сообщение в БД.
                 int amountOfMessages = Integer.parseInt(splitText[1]);
-                //Если распарсили число удачно, то проверяем больше оно чем общее количество записей в БД,
-                //то уведомляем об этом пользователя.
 
                 if (messageRepo.count() < amountOfMessages) {
                     return "The number of records in the database (" + messageRepo.count() + ") " +
@@ -51,7 +47,6 @@ public class UserService implements UserDetailsService {
                 }
                 Pageable pages = PageRequest.of(0, amountOfMessages, Sort.Direction.DESC, "id");
                 List<Message> listFromDb = messageRepo.findAll(pages).getContent();
-                //Если запрос составлен корректно, то "строим" строку для ответа.
                 StringBuilder builder = new StringBuilder();
                 for (int i = 1; i < amountOfMessages + 1; i++) {
                     builder
@@ -73,21 +68,20 @@ public class UserService implements UserDetailsService {
         saveMessage(message);
         return "Message successfully saved in the database";
     }
-    //метод добавляет сообщение в БД.
+
     public void saveMessage(Message message) {
         AppUser user = usernameValidation(message.getName());
         messageRepo.save(message);
         user.getMessages().add(message);
 
     }
-    //Проверка валидности имени пользователя (есть ли в БД пользователь с таким именем).
+
     public AppUser usernameValidation(String username) {
         Optional<AppUser> user = userRepo.findByUsername(username);
-        if (user.isEmpty()) throw new UsernameNotFoundException("User with such username wasn't found in the database!");
+        if (user.isEmpty())
+            throw new UsernameNotFoundException("User with such username wasn't found in the database!");
         return user.get();
     }
-    //Далее идут методы, необходимые для заполнения БД, тестирования и правильной работы Spring Security.
-    //-----------------------------------------------------
 
     public AppUser saveUser(AppUser user) {
         user.setPassword(encoder.encode(user.getPassword()));
@@ -106,7 +100,8 @@ public class UserService implements UserDetailsService {
 
     public Role roleNameValidation(String RoleName) {
         Optional<Role> role = roleRepo.findByName(RoleName);
-        if (role.isEmpty()) throw new UsernameNotFoundException("User with such username wasn't found in the database!");
+        if (role.isEmpty())
+            throw new UsernameNotFoundException("User with such username wasn't found in the database!");
         return role.get();
     }
 
@@ -123,8 +118,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-
     public List<Message> getMessages() {
         return (List<Message>) messageRepo.findAll();
-        }
     }
+}

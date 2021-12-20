@@ -22,18 +22,12 @@ public class AppUserController {
 
     private final UserService service;
 
-    //Здесь происходит создание объекта Message в соответствии с телом запроса.
-    //Вся логика находится в методе proceedIncomingMessage класса UserService.
     @PostMapping("/messages/save")
     public ResponseEntity<String> proceedIncomingMessage(@RequestBody Message message) {
         String response = service.proceedIncomingMessage(message);
         if (response.startsWith("Message ")) return new ResponseEntity<>(response, OK);
         else return new ResponseEntity<>(response, BAD_REQUEST);
     }
-
-
-    //Далее идут методы, необходимые для заполнения БД и тестирования.
-    //-------------------------------------------------------------------
 
     @GetMapping("/admin")
     public String adminPage() {

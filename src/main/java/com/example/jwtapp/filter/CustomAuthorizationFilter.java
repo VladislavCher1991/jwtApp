@@ -22,16 +22,13 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
-//данный фильтр будет выполняться при любом запросе к серверу (кроме /login).
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (request.getServletPath().equals("/login")) {
             filterChain.doFilter(request, response);
         } else {
-            //проверяем заголовок запроса на наличие ключа "Authorization"
             String authorisationHeader = request.getHeader(AUTHORIZATION);
             if (authorisationHeader != null && authorisationHeader.startsWith("Bearer ")) {
-                //если ключ найден проверяем значение данного ключа. Оно должно начинаться с "Bearer " то парсим токен.
                 try {
                     String token = authorisationHeader.substring("Bearer ".length());
                     Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
@@ -41,14 +38,11 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     Arrays.stream(roles).forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
-                    //добавляем имя пользователя в спринговский контекс. После этого пользователь получает доступ
-                    //ко всем запросам (исходя из ролей)
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
                 } catch (Exception e) {
-                    //если данные в токене не валидные формируем сообщение об ошибке и отправляем пользователю.
                     response.setHeader("error", e.getMessage());
                     response.setStatus(FORBIDDEN.value());
                     Map<String, String> error = new HashMap<>();
